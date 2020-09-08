@@ -40,15 +40,22 @@
 
 (define read-xlsx%
   (class object%
-         (init-field [xlsx_dir ""]
-                     [shared_map #f]
-                     [sheet_map #f]
-                     [sheet_name_map #f]
-                     [relation_name_map #f]
-                     [formula_map #f]
-                     [data_type_map #f]
-                     [dimension #f])
-         (super-new)))
+         (init-field
+          [shared_map #f]
+          [sheet_map #f]
+          [relation_name_map #f]
+          [sheets '()]
+          [sheet_name_map #f]
+          [string_item_map #f]
+          [style #f]
+          [xlsx_dir ""]
+          [formula_map #f]
+          [data_type_map #f]
+          [dimension #f])
+
+         (super-new)
+
+         ))
 
 (define xlsx%
   (class object%
