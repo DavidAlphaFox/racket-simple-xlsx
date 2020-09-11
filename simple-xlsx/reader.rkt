@@ -31,9 +31,9 @@
      (set! new_shared_map (get-shared-string tmp_dir))
 
      (set! new_sheet_name_map (get-sheet-name-map tmp_dir))
-
+     
      (set! new_relation_name_map (get-relation-name-map tmp_dir))
-
+     
      (set! xlsx_obj
            (new read-xlsx%
                  (xlsx_dir tmp_dir)
