@@ -24,21 +24,27 @@
   (call-with-unzip
    xlsx_file
    (lambda (tmp_dir)
-     (let ([new_shared_map #f]
+     (let ([new_shared_string_map #f]
            [new_sheet_name_map #f]
            [new_relation_name_map #f]
+           [sheets '()]
+           [fomula_map (make-hash)]
+           [data_type_map (make-hash)]
            [xlsx_obj #f])
-     (set! new_shared_map (get-shared-string tmp_dir))
+     (set! new_shared_string_map (get-shared-string tmp_dir))
 
      (set! new_sheet_name_map (get-sheet-name-map tmp_dir))
      
      (set! new_relation_name_map (get-relation-name-map tmp_dir))
      
+     (set! sheets
+           
+     
      (set! xlsx_obj
            (new read-xlsx%
                  (xlsx_dir tmp_dir)
-                 (shared_map new_shared_map)
-                 (sheet_name_map new_sheet_name_map)
+                 (shared_string_map new_shared_string_map)
+                 (sheet_name_map ew_sheet_name_map)
                  (relation_name_map new_relation_name_map)))
      (user_proc xlsx_obj)))))
 
@@ -236,10 +242,8 @@
                     row_xml)))
            rows)
           )
-
-    (set-field! sheet_map xlsx data_map)
-    (set-field! formula_map xlsx formula_map)
-    (set-field! data_type_map xlsx type_map)))
+    
+    (list data_map formula_map type_map)))
 
 (define (load-sheet-ref sheet_index xlsx)
   (load-sheet (list-ref (get-sheet-names xlsx) sheet_index) xlsx))
@@ -291,8 +295,8 @@
            (add1 row_index)
            (cons 
             (map
-             (lambda (col)
-               (get-cell-value (string-append (number->abc col) (number->string row_index)) xlsx))
+             (lambda (col_index)
+               (get-cell-value (string-append (number->abc col_index) (number->string row_index)) xlsx))
              (number->list cols))
             result_list))
           (reverse result_list)))))

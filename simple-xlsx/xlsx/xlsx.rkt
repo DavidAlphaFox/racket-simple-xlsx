@@ -41,14 +41,11 @@
 (define read-xlsx%
   (class object%
          (init-field
-          [shared_map #f]
-          [sheet_map #f]
+          [shared_string_map #f]
+          [sheet_name_map #f]
           [relation_name_map #f]
           [sheets '()]
-          [sheet_name_map #f]
-          [string_item_map #f]
           [style #f]
-          [xlsx_dir ""]
           [formula_map #f]
           [data_type_map #f]
           [dimension #f])
@@ -61,10 +58,10 @@
   (class object%
          (super-new)
          
-         (field 
+         (field
           [sheets '()]
           [sheet_name_map (make-hash)]
-          [string_item_map (make-hash)]
+          [shared_string_map (make-hash)]
           [style (xlsx-style (make-hash) '() (make-hash) '() (make-hash) '() (make-hash) '() (make-hash) '() (make-hash))]
           )
          
@@ -89,7 +86,7 @@
                                             (cons
                                              (cond
                                               [(string? (car inner_loop_list))
-                                               (hash-set! string_item_map (car inner_loop_list) "")
+                                               (hash-set! shared_string_map (car inner_loop_list) "")
                                                (car inner_loop_list)]
                                               [(date? (car inner_loop_list))
                                                (date->oa_date_number (car inner_loop_list))]
@@ -204,7 +201,7 @@
            (set-data-sheet-freeze_range! (sheet-content (get-sheet-by-name sheet_name)) range))
 
          (define/public (get-string-item-list)
-           (sort (hash-keys string_item_map) string<?))
+           (sort (hash-keys shared_string_map) string<?))
 
          (define/public (get-string-index-map)
            (let ([string_index_map (make-hash)])
