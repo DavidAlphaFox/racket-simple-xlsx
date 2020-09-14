@@ -42,7 +42,7 @@
   (class object%
          (init-field
           [shared_string_map #f]
-          [sheet_name_map #f]
+          [sheet_name_id_map #f]
           [relation_name_map #f]
           [sheets '()]
           [style #f]

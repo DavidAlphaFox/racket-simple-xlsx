@@ -25,7 +25,7 @@
    xlsx_file
    (lambda (tmp_dir)
      (let ([new_shared_string_map #f]
-           [new_sheet_name_map #f]
+           [new_sheet_name_id_map #f]
            [new_relation_name_map #f]
            [sheets '()]
            [fomula_map (make-hash)]
@@ -37,8 +37,7 @@
      
      (set! new_relation_name_map (get-relation-name-map tmp_dir))
      
-     (set! sheets
-           
+     (set! sheets 
      
      (set! xlsx_obj
            (new read-xlsx%
@@ -53,8 +52,7 @@
     (with-input-from-file
         (build-path xlsx_dir "xl" "workbook.xml")
       (lambda ()
-        (let ([xml (xml->xexpr (document-element (read-xml (current-input-port))))]
-              [sheet_list '()])
+        (let ([xml (xml->xexpr (document-element (read-xml (current-input-port))))])
           (for-each
            (lambda (sheet)
              (let ([attr_list (cadr sheet)]
