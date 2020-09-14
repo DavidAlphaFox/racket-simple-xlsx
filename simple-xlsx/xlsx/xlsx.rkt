@@ -41,6 +41,7 @@
 (define read-xlsx%
   (class object%
          (init-field
+          [sheet_name_list #f]
           [shared_string_map #f]
           [sheet_name_id_map #f]
           [relation_name_map #f]
