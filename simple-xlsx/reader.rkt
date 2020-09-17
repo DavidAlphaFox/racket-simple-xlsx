@@ -54,20 +54,53 @@
   (with-input-from-file
       (build-path xlsx_dir "xl" "workbook.xml")
     (lambda ()
-      (let ([xml (xml->xexpr (document-element (read-xml (current-input-port))))])
-        (let loop-sheet ([sheets (xml-get-list 'sheets xml)]
-                         [sheet_attr_list '()])
+      (let ([xml (xml->xexpr (document-element (read-xml (current-input-port))))]
+            [sheet_id_name_map (make-hash)])
+        (let loop-sheet ([sheets (xml-get-list 'sheets xml)])
           (if (not (null? sheets))
-              (let ([attr_list (cadr sheet)]
-                    [attr_map (make-hash)])
-
-                (let ([name (car attr_pair)]
-                      [value (cadr attr_pair)])
-                  (hash-set! attr_map name value)
+              (let loop-attr ([attr_list (cadr sheet)])
+                (if (not (null? attr_list))
+                    (let ([name (car attr_pair)]
+                          [value (cadr attr_pair)]
+                          [sheet_name #f]
+                          [sheet_id #f])
+                    (cond
+                     [(equal? name 'name)
+                      (set! sheet_name value)]
+                     [(equal? name 'r:id)
+                      (set! sheet_id value)]))
+                  (hash-set! attr_map sheet_name sheet_id)
                   attr_list)
                 
                 (loop-sheet (cdr sheets) (cons (cons (hash-ref attr_map 'name) attr_map) sheet_attr_list)))
               (reverse sheet_attr_list)))))))
+
+(define (get-sheet-name-map xlsx_dir)
+  (let ([data_map (make-hash)])
+    (with-input-from-file
+        (build-path xlsx_dir "xl" "workbook.xml")
+      (lambda ()
+        (let ([xml (xml->xexpr (document-element (read-xml (current-input-port))))]
+              [sheet_list '()])
+          (for-each
+           (lambda (sheet)
+             (let ([attr_list (cadr sheet)]
+                   [sheet_name ""]
+                   [sheet_id ""])
+               (for-each
+                (lambda (attr_pair)
+                  (let ([name (car attr_pair)]
+                        [value (cadr attr_pair)])
+                    (cond
+                     [(equal? name 'name)
+                      (set! sheet_name value)]
+                     [(equal? name 'r:id)
+                      (set! sheet_id value)])))
+                attr_list)
+               (hash-set! data_map sheet_name sheet_id)))
+           (xml-get-list 'sheets xml)))))
+    data_map))
+
 
 (define (get-relation-name-map xlsx_dir)
   (let ([data_map (make-hash)])
