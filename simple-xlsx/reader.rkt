@@ -24,22 +24,23 @@
   (call-with-unzip
    xlsx_file
    (lambda (tmp_dir)
-     (let ([new_sheet_name_list #f]
-           [new_shared_string_map #f]
-           [new_sheet_name_id_map #f]
-           [new_relation_name_map #f]
-           [sheets '()]
-           [fomula_map (make-hash)]
-           [data_type_map (make-hash)]
-           [xlsx_obj #f])
+     (let (
+          [sheet_id_list #f]
+          [sheet_id_name_map #f]
+          [sheet_name_id_map #f]
+          [sheet_id_relation_map #f]
+          [sheet_id_index_map #f]
+          [sheets '()]
+          [shared_string_map #f]
+          [fomula_map (make-hash)]
+          [data_type_map (make-hash)]
+          [xlsx_obj #f])
 
-     (set! new_shared_string_map (get-shared-string tmp_dir))
+     (set! shared_string_map (get-shared-string tmp_dir))
 
-     (set! new_sheet_name_map (get-sheet-name-map tmp_dir))
+     (set! sheet_name_map (get-sheet-name-map tmp_dir))
      
      (set! new_relation_name_map (get-relation-name-map tmp_dir))
-     
-     (set! sheets 
      
      (set! xlsx_obj
            (new read-xlsx%
