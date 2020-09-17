@@ -1,6 +1,7 @@
 #lang racket
 
 (provide (contract-out
+          [load-sheet-attr (-> path-string? (values (listof string?) hash? hash?))]
           [with-input-from-xlsx-file (-> path-string? (-> (is-a?/c read-xlsx%) any) any)]
           [get-sheet-names (-> (is-a?/c read-xlsx%) list?)]
           [get-cell-value (-> string? (is-a?/c read-xlsx%) any)]
@@ -29,17 +30,20 @@
           [sheet_id_name_map #f]
           [sheet_name_id_map #f]
           [sheet_id_relation_map #f]
-          [sheet_id_index_map #f]
           [sheets '()]
           [shared_string_map #f]
           [fomula_map (make-hash)]
           [data_type_map (make-hash)]
           [xlsx_obj #f])
 
+       (let-values ([(_sheet_id_list _sheet_id_name_map _sheet_name_id_map)
+                     (load-sheet-attr xlsx_dir)])
+         (set! sheet_id_list _sheet_id_list)
+         (set! sheet_id_name_map _sheet_id_name_map)
+         (set! sheet_name_id_map _sheet_name_id_map))
+
      (set! shared_string_map (get-shared-string tmp_dir))
 
-     (set! sheet_name_map (get-sheet-name-map tmp_dir))
-     
      (set! new_relation_name_map (get-relation-name-map tmp_dir))
      
      (set! xlsx_obj
@@ -55,7 +59,9 @@
       (build-path xlsx_dir "xl" "workbook.xml")
     (lambda ()
       (let ([xml (xml->xexpr (document-element (read-xml (current-input-port))))]
-            [sheet_id_name_map (make-hash)])
+            [sheet_id_list '()]
+            [sheet_id_name_map (make-hash)]
+            [sheet_name_id_map (make-hash)])
         (let loop-sheet ([sheets (xml-get-list 'sheets xml)])
           (if (not (null? sheets))
               (let loop-attr ([attr_list (cadr sheet)])
@@ -69,38 +75,15 @@
                       (set! sheet_name value)]
                      [(equal? name 'r:id)
                       (set! sheet_id value)]))
-                  (hash-set! attr_map sheet_name sheet_id)
-                  attr_list)
-                
-                (loop-sheet (cdr sheets) (cons (cons (hash-ref attr_map 'name) attr_map) sheet_attr_list)))
-              (reverse sheet_attr_list)))))))
-
-(define (get-sheet-name-map xlsx_dir)
-  (let ([data_map (make-hash)])
-    (with-input-from-file
-        (build-path xlsx_dir "xl" "workbook.xml")
-      (lambda ()
-        (let ([xml (xml->xexpr (document-element (read-xml (current-input-port))))]
-              [sheet_list '()])
-          (for-each
-           (lambda (sheet)
-             (let ([attr_list (cadr sheet)]
-                   [sheet_name ""]
-                   [sheet_id ""])
-               (for-each
-                (lambda (attr_pair)
-                  (let ([name (car attr_pair)]
-                        [value (cadr attr_pair)])
-                    (cond
-                     [(equal? name 'name)
-                      (set! sheet_name value)]
-                     [(equal? name 'r:id)
-                      (set! sheet_id value)])))
-                attr_list)
-               (hash-set! data_map sheet_name sheet_id)))
-           (xml-get-list 'sheets xml)))))
-    data_map))
-
+                    (begin
+                      (set! sheet_id_list `(,@sheet_id_list ,sheet_id))
+                      (hash-set! sheet_name_id_map sheet_name sheet_id)
+                      (hash-set! sheet_id_name_map sheet_id sheet_name))))
+              (loop-sheet (cdr sheets)))
+          (values
+           sheet_id_list
+           sheet_id_name_map
+           sheet_name_id_map))))))
 
 (define (get-relation-name-map xlsx_dir)
   (let ([data_map (make-hash)])

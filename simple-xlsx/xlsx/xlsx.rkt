@@ -45,7 +45,6 @@
           [sheet_id_name_map #f]
           [sheet_name_id_map #f]
           [sheet_id_relation_map #f]
-          [sheet_id_index_map #f]
           [sheets '()]
           [style #f]
           [shared_string_map #f]
