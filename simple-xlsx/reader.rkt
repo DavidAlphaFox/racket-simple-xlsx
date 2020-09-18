@@ -37,7 +37,7 @@
           [xlsx_obj #f])
 
        (let-values ([(_sheet_id_list _sheet_id_name_map _sheet_name_id_map)
-                     (load-sheet-attr xlsx_dir)])
+                     (load-sheet-attr (build-path xlsx_dir "xl" "workbook.xml"))])
          (set! sheet_id_list _sheet_id_list)
          (set! sheet_id_name_map _sheet_id_name_map)
          (set! sheet_name_id_map _sheet_name_id_map))
@@ -54,14 +54,16 @@
                  (relation_name_map new_relation_name_map)))
      (user_proc xlsx_obj)))))
 
-(define (load-sheet-attr xlsx_dir)
+(define (load-sheet-attr workbook_xml)
   (with-input-from-file
-      (build-path xlsx_dir "xl" "workbook.xml")
+      workbook_xml
     (lambda ()
       (let ([xml (xml->xexpr (document-element (read-xml (current-input-port))))]
             [sheet_id_list '()]
             [sheet_id_name_map (make-hash)]
-            [sheet_name_id_map (make-hash)])
+            [sheet_name_id_map (make-hash)]
+            [sheet_id_rid_map (make-hash)]
+            )
         (let loop-sheet ([sheets (xml-get-list 'sheets xml)])
           (if (not (null? sheets))
               (let loop-attr ([attr_list (cadr sheet)])
@@ -69,21 +71,27 @@
                     (let ([name (car attr_pair)]
                           [value (cadr attr_pair)]
                           [sheet_name #f]
-                          [sheet_id #f])
+                          [sheet_id #f]
+                          [rid #f])
                     (cond
                      [(equal? name 'name)
                       (set! sheet_name value)]
+                     [(equal? name 'sheetId)
+                      (set! sheet_id value)]
                      [(equal? name 'r:id)
-                      (set! sheet_id value)]))
+                      (set! rid value)]))
                     (begin
-                      (set! sheet_id_list `(,@sheet_id_list ,sheet_id))
+                      (set! sheet_id_list `(,@sheet_rid_list ,sheet_id))
+                      (hash-set! sheet_id_rid_map sheet_id rid)
                       (hash-set! sheet_name_id_map sheet_name sheet_id)
                       (hash-set! sheet_id_name_map sheet_id sheet_name))))
               (loop-sheet (cdr sheets)))
           (values
            sheet_id_list
            sheet_id_name_map
-           sheet_name_id_map))))))
+           sheet_name_id_map
+           sheet_id_rid_map
+           ))))))
 
 (define (get-relation-name-map xlsx_dir)
   (let ([data_map (make-hash)])
