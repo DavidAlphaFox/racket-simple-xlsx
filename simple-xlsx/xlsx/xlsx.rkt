@@ -47,7 +47,7 @@
           [sheet_id_relation_map #f]
           [sheets '()]
           [style #f]
-          [shared_string_map #f]
+          [shared_strings_map #f]
           [formula_map #f]
           [data_type_map #f]
           [dimension #f])
