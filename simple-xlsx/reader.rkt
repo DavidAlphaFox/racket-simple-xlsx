@@ -3,6 +3,7 @@
 (provide (contract-out
           [load-sheet-attr (-> path-string? (values (listof string?) hash? hash? hash?))]
           [get-shared-strings (-> path-string? hash?)]
+          [get-rid-rel-map (-> path-string? hash?)]
           [with-input-from-xlsx-file (-> path-string? (-> (is-a?/c read-xlsx%) any) any)]
           [get-sheet-names (-> (is-a?/c read-xlsx%) list?)]
           [get-cell-value (-> string? (is-a?/c read-xlsx%) any)]
@@ -32,7 +33,7 @@
            [sheet_name_id_map #f]
            [sheet_id_rid_map #f]
            [shared_strings_map #f]
-           [sheet_id_relation_map #f]
+           [sheet_rid_rel_map #f]
            [sheets '()]
            [fomula_map (make-hash)]
            [data_type_map (make-hash)]
@@ -48,7 +49,7 @@
 
        (set! shared_strings_map (get-shared-strings (build-path tmp_dir "xl" "sharedStrings.xml")))
 
-       (set! sheet_id_relation_map (get-relation-name-map tmp_dir))
+       (set! sheet_rid_rel_map (get-rid-rel-map (build-path tmp_dir "xl" "_rels" "workbook.xml.rels")))
        
        (set! xlsx_obj
              (new read-xlsx%
@@ -119,7 +120,7 @@
                                    (xml-get-list 'rPh xml))
                                   
                                   (hash-set! data_map
-                                             (number->string index)
+                                             index
                                              (regexp-replace* 
                                               #rx" " 
                                               (foldr (lambda (a b) (string-append a b)) "" 
@@ -140,15 +141,13 @@
                         (loop2 (cdr split_items1) (add1 index))))))))
     data_map))
 
-(define (get-relation-name-map xlsx_dir)
+(define (get-rid-rel-map workbook_relation_file)
   (let ([data_map (make-hash)])
     (with-input-from-file
-        (build-path xlsx_dir "xl" "_rels" "workbook.xml.rels")
+        workbook_relation_file
       (lambda ()
-        (let ([xml (xml->xexpr (document-element (read-xml (current-input-port))))]
-              [sheet_list '()])
-          (let loop ([loop_list 
-                      (xml-get-list 'Relationships xml)])
+        (let ([xml (xml->xexpr (document-element (read-xml (current-input-port))))])
+          (let loop ([loop_list (xml-get-list 'Relationships xml)])
             (when (not (null? loop_list))
                   (if (not (list? (car loop_list)))
                       (loop (cdr loop_list))
