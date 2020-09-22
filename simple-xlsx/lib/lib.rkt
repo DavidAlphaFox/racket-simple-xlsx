@@ -7,9 +7,6 @@
 (require file/zip)
 
 (provide (contract-out
-          [xml-get-list (-> symbol? xexpr? list?)]
-          [xml-get-attr (-> symbol? string? xexpr? string?)]
-          [xml-get (-> symbol? xexpr? string?)]
           [number->list (-> number? list?)]
           [format-date (-> date? string?)]
           [format-complete-time (-> date? string?)]
@@ -73,20 +70,29 @@
             (~a (inexact->exact minute) #:min-width 2 #:pad-string "0" #:align 'right)
             (~a (inexact->exact second) #:min-width 2 #:pad-string "0" #:align 'right))))
 
-(define (xml-get node-name xml-list)
-  (let ([xml_value (se-path* (list node-name) xml-list)])
-    (if xml_value
-        xml_value
-        "")))
-
-(define (xml-get-attr node_name attr_name xml-list)
-  (let ([xml_value (se-path* `(,node_name ,(string->keyword attr_name)) xml-list)])
-    (if xml_value
-        xml_value
-        "")))
-
 (define (xml-get-list list-node-name xml-list)
   (se-path*/list (list list-node-name) xml-list))
+
+(define (load-xml-list workbook_xml node_name)
+  (with-input-from-file
+      workbook_xml
+    (lambda ()
+      (let ([xml (xml->xexpr (document-element (read-xml (current-input-port))))])
+        (let loop-node ([nodes (xml-get-list node_name xml)]
+                        [result_list '()])
+          (if (not (null? nodes))
+              (cons
+               (cdr nodes)
+               (cons
+                (let loop-attr ([attrs (cadar nodes)]
+                                [attr_list '()])
+                  (if (not (null? attr_list))
+                      (loop-attr
+                       (cdr attrs)
+                       (cons (cons (caar attrs) (cadar attrs)) attr_list))
+                      (reverse attr_list)))
+                result_list))
+              (reverse result_list)))))))
 
 ;; YYYYMMDD HH:MM:SS
 (define (value-of-time time_str)
