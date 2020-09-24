@@ -7,6 +7,7 @@
 (require file/zip)
 
 (provide (contract-out
+          [load-xml (-> path-string? list?)]
           [number->list (-> number? list?)]
           [format-date (-> date? string?)]
           [format-complete-time (-> date? string?)]
@@ -70,15 +71,12 @@
             (~a (inexact->exact minute) #:min-width 2 #:pad-string "0" #:align 'right)
             (~a (inexact->exact second) #:min-width 2 #:pad-string "0" #:align 'right))))
 
-(define (xml-get-list list-node-name xml-list)
-  (se-path*/list (list list-node-name) xml-list))
-
-(define (load-xml-list workbook_xml node_name)
+(define (load-xm workbook_xml)
   (with-input-from-file
       workbook_xml
     (lambda ()
       (let ([xml (xml->xexpr (document-element (read-xml (current-input-port))))])
-        (let loop-node ([nodes (xml-get-list node_name xml)]
+        (let loop-node ([nodes (se-path*/list '() xml)]
                         [result_list '()])
           (if (not (null? nodes))
               (cons
