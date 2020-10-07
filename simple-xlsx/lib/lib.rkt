@@ -71,7 +71,7 @@
             (~a (inexact->exact minute) #:min-width 2 #:pad-string "0" #:align 'right)
             (~a (inexact->exact second) #:min-width 2 #:pad-string "0" #:align 'right))))
 
-(define (load-xm workbook_xml)
+(define (load-xml workbook_xml)
   (with-input-from-file
       workbook_xml
     (lambda ()

@@ -15,7 +15,7 @@
    (test-case
     "test-load-xml-list"
 
-    (let ([data_list (load-xml-list xml_file '(sheets fileVersion))])
+    (let ([data_list (load-xml xml_file)])
       (printf "~a\n" data_list)
       (check-equal? (length (car data_list)) 9)
       )
