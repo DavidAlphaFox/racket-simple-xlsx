@@ -3,25 +3,12 @@
 (require rackunit/text-ui)
 (require racket/date)
 
-(require racket/runtime-path)
-(define-runtime-path xml_file "workbook.xml")
-
 (require rackunit "../../lib/lib.rkt")
 
 (define test-lib
   (test-suite
    "test-lib"
 
-   (test-case
-    "test-load-xml-list"
-
-    (let ([data_list (load-xml xml_file)])
-      (printf "~a\n" data_list)
-      (check-equal? (length (car data_list)) 9)
-      )
-
-    )
-   
    (test-case
     "test-check-lines1"
     (call-with-input-string 
