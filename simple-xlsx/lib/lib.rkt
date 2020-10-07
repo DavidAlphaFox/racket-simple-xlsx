@@ -22,6 +22,27 @@
           [oa_date_number->date (->* (number?) (boolean?) date?)]
           ))
 
+(define (load-xml xml)
+  (with-input-from-file
+      xml
+    (lambda ()
+      (let ([xml (xml->xexpr (document-element (read-xml (current-input-port))))])
+        (let loop-node ([nodes (se-path*/list '() xml)]
+                        [result_list '()])
+          (if (not (null? nodes))
+              (cons
+               (cdr nodes)
+               (cons
+                (let loop-attr ([attrs (cadar nodes)]
+                                [attr_list '()])
+                  (if (not (null? attr_list))
+                      (loop-attr
+                       (cdr attrs)
+                       (cons (cons (caar attrs) (cadar attrs)) attr_list))
+                      (reverse attr_list)))
+                result_list))
+              (reverse result_list)))))))
+
 (define-check (check-lines? expected_port test_port)
   (let* ([expected_lines (port->lines expected_port)]
          [test_lines (port->lines test_port)]
@@ -70,27 +91,6 @@
             (~a (inexact->exact hour) #:min-width 2 #:pad-string "0" #:align 'right)
             (~a (inexact->exact minute) #:min-width 2 #:pad-string "0" #:align 'right)
             (~a (inexact->exact second) #:min-width 2 #:pad-string "0" #:align 'right))))
-
-(define (load-xml workbook_xml)
-  (with-input-from-file
-      workbook_xml
-    (lambda ()
-      (let ([xml (xml->xexpr (document-element (read-xml (current-input-port))))])
-        (let loop-node ([nodes (se-path*/list '() xml)]
-                        [result_list '()])
-          (if (not (null? nodes))
-              (cons
-               (cdr nodes)
-               (cons
-                (let loop-attr ([attrs (cadar nodes)]
-                                [attr_list '()])
-                  (if (not (null? attr_list))
-                      (loop-attr
-                       (cdr attrs)
-                       (cons (cons (caar attrs) (cadar attrs)) attr_list))
-                      (reverse attr_list)))
-                result_list))
-              (reverse result_list)))))))
 
 ;; YYYYMMDD HH:MM:SS
 (define (value-of-time time_str)
