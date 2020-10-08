@@ -13,10 +13,12 @@
    "test-xml"
 
    (test-case
-    "test-load-xml-list"
+    "test-get-xml-list"
 
-    (let ([xml_hash (load-xml xml_file)])
-      (printf "~a\n" xml_hash)
+    (let* ([xml_xpr (load-xml xml_file)]
+           [sheet_list (get-xml-list 'sheets xml_xpr)])
+      (printf "~a\n" sheet_list)
+      (check-equal? (length sheet_list) 10)
       )
 
     )

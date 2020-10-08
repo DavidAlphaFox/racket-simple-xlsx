@@ -21,6 +21,7 @@
 
 (require "xlsx/xlsx.rkt")
 (require "lib/lib.rkt")
+(require "lib/xml.rkt")
 (require "xlsx/range-lib.rkt")
 
 (define (with-input-from-xlsx-file xlsx_file user_proc)
@@ -60,43 +61,40 @@
        (user_proc xlsx_obj)))))
 
 (define (load-sheet-attr workbook_xml)
-  (with-input-from-file
-      workbook_xml
-    (lambda ()
-      (let ([xml (xml->xexpr (document-element (read-xml (current-input-port))))]
-            [sheet_id_list '()]
-            [sheet_id_name_map (make-hash)]
-            [sheet_name_id_map (make-hash)]
-            [sheet_id_rid_map (make-hash)]
-            )
-        (let loop-sheet ([sheets (xml-get-list 'sheets xml)])
-          (if (not (null? sheets))
-              (let ([sheet_name #f]
-                    [sheet_id #f]
-                    [rid #f])
-                (let loop-attr ([attr_list (cadar sheets)])
-                  (if (not (null? attr_list))
-                      (let ([name (caar attr_list)]
-                            [value (cadar attr_list)])
-                        (cond
-                         [(equal? name 'name)
-                          (set! sheet_name value)]
-                         [(equal? name 'sheetId)
-                          (set! sheet_id value)]
-                         [(equal? name 'r:id)
-                          (set! rid value)])
-                        (loop-attr (cdr attr_list)))
-                      (begin
-                        (set! sheet_id_list `(,@sheet_id_list ,sheet_id))
-                        (hash-set! sheet_id_rid_map sheet_id rid)
-                        (hash-set! sheet_name_id_map sheet_name sheet_id)
-                        (hash-set! sheet_id_name_map sheet_id sheet_name))))
-                (loop-sheet (cdr sheets)))
-              (values
-               sheet_id_list
-               sheet_id_name_map
-               sheet_name_id_map
-               sheet_id_rid_map)))))))
+  (let ([xml (load-xml workbook_xml)]
+        [sheet_id_list '()]
+        [sheet_id_name_map (make-hash)]
+        [sheet_name_id_map (make-hash)]
+        [sheet_id_rid_map (make-hash)]
+        )
+    (let loop-sheet ([sheets (xml-get-list 'sheets xml)])
+      (if (not (null? sheets))
+          (let ([sheet_name #f]
+                [sheet_id #f]
+                [rid #f])
+            (let loop-attr ([attr_list (cadar sheets)])
+              (if (not (null? attr_list))
+                  (let ([name (caar attr_list)]
+                        [value (cadar attr_list)])
+                    (cond
+                     [(equal? name 'name)
+                      (set! sheet_name value)]
+                     [(equal? name 'sheetId)
+                      (set! sheet_id value)]
+                     [(equal? name 'r:id)
+                      (set! rid value)])
+                    (loop-attr (cdr attr_list)))
+                  (begin
+                    (set! sheet_id_list `(,@sheet_id_list ,sheet_id))
+                    (hash-set! sheet_id_rid_map sheet_id rid)
+                    (hash-set! sheet_name_id_map sheet_name sheet_id)
+                    (hash-set! sheet_id_name_map sheet_id sheet_name))))
+            (loop-sheet (cdr sheets)))
+          (values
+           sheet_id_list
+           sheet_id_name_map
+           sheet_name_id_map
+           sheet_id_rid_map)))))
 
 (define (get-shared-strings shared_string_file)
   (let ([data_map (make-hash)])
