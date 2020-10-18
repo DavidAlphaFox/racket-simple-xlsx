@@ -16,9 +16,10 @@
     "test-get-xml-list"
 
     (let* ([xml_xpr (load-xml xml_file)]
-           [sheet_list (get-xml-list 'sheets xml_xpr)])
-      (printf "~a\n" sheet_list)
+           [sheet_list (get-xml-list 'sheets xml_xpr)]
+           )
       (check-equal? (length sheet_list) 10)
+      (printf "~a\n" (get-xml-content '(fileVersion #:appName) xml_xpr))
       )
 
     )

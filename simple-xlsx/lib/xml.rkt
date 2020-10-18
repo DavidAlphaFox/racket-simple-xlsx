@@ -6,6 +6,7 @@
 
 (provide (contract-out
           [load-xml (-> path-string? xexpr?)]
+          [get-xml-content (-> (listof symbol?) xexpr? any)]
           [get-xml-list (-> symbol? xexpr? list?)]
           [get-attr-hash (-> list? hash?)]
           ))
@@ -16,13 +17,15 @@
     (lambda ()
       (xml->xexpr (document-element (read-xml (current-input-port)))))))
 
+(define (get-xml-content sym_list xml_xpr)
+  (se-path* sym_list xml_xpr))
+
 (define (get-xml-list node_sym xml_xpr)
   (se-path*/list (list node_sym) xml_xpr))
 
-
 (define (get-attr-hash node_xml)
   (let ([attr_hash (make-hash)])
-    (let loop-attr ([attrs (cadr nodes)])
+    (let loop-attr ([attrs (cadr node_xml)])
       (when (not (null? attrs))
             (hash-set! attr_hash (caar attrs) (cadar attrs))
             (loop-attr (cdr attrs))))
