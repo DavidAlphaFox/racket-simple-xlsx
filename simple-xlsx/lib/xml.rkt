@@ -7,7 +7,7 @@
 (provide (contract-out
           [load-xml (-> path-string? xexpr?)]
           [get-xml-content (-> (listof symbol?) xexpr? any)]
-          [get-xml-list (-> symbol? xexpr? list?)]
+          [get-xml-list (-> (listof symbol?) xexpr? list?)]
           [get-attr-hash (-> list? hash?)]
           ))
 
@@ -20,8 +20,8 @@
 (define (get-xml-content sym_list xml_xpr)
   (se-path* sym_list xml_xpr))
 
-(define (get-xml-list node_sym xml_xpr)
-  (se-path*/list (list node_sym) xml_xpr))
+(define (get-xml-list sym_list xml_xpr)
+  (se-path*/list sym_list xml_xpr))
 
 (define (get-attr-hash node_xml)
   (let ([attr_hash (make-hash)])
