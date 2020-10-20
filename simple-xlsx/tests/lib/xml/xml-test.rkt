@@ -16,6 +16,8 @@
     "test-get-xml-list"
 
     (let* ([xml_hash (load-xml xml_file '(sheets))])
+      (printf "~a\n" xml_hash)
+
       (check-equal? (hash-count xml_hash) 14)
       (check-equal? (hash-count (hash-ref xml_hash 'sheets)) 10)
       (check-equal? (hash-ref xml_hash 'workbook.xmlns) "http://schemas.openxmlformats.org/spreadsheetml/2006/main")

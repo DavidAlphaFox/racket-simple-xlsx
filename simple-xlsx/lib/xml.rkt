@@ -11,14 +11,25 @@
   (with-input-from-file
       xml
     (lambda ()
-      (let ([xml_list (xml->xexpr (document-element (read-xml (current-input-port))))])
-        (make-hash)))))
+      (let ([xml_hash (make-hash)])
+        (let loop-node ([xml_list (list (xml->xexpr (document-element (read-xml (current-input-port)))))])
+          (when (not (null? xml_list))
+                (let* ([node (car xml_list)]
+                       [prefix (car node)]
+                       [attr_list (cadr node)]
+                       [content_list (cddr node)])
+                  
+                  (printf "prefix:~a\n" prefix)
+                  (printf "attr_list:~a\n" attr_list)
+                  (printf "content_list:~a\n\n\n" content_list)
 
-(define (get-attr-hash node_xml)
-  (let ([attr_hash (make-hash)])
-    (let loop-attr ([attrs (cadr node_xml)])
-      (when (not (null? attrs))
-            (hash-set! attr_hash (caar attrs) (cadar attrs))
-            (loop-attr (cdr attrs))))
-    attr_hash))
+                  (let loop-attr ([attrs attr_list])
+                    (when (not (null? attrs))
+                          (hash-set! xml_hash (string->symbol (string-append (symbol->string prefix) "." (symbol->string (caar attrs)))) (cadar attrs))
+                          (loop-attr (cdr attrs))))
 
+                  (loop-node content_list)
+                  
+                  (loop-node (cdr xml_list)))))
+
+        xml_hash))))
