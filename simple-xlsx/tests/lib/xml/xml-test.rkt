@@ -15,7 +15,7 @@
    (test-case
     "test-get-xml-list"
 
-    (let* ([xml_hash (load-xml xml_file '(sheets))])
+    (let* ([xml_hash (load-xml xml_file '(sheet))])
       (printf "~a\n" xml_hash)
 
       (check-equal? (hash-count xml_hash) 14)

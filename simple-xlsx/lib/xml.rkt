@@ -11,7 +11,11 @@
   (with-input-from-file
       xml
     (lambda ()
-      (let ([xml_hash (make-hash)])
+      (let ([xml_hash (make-hash)]
+            [sym_hash (make-hash)])
+
+        (map (lambda (sym) (hash-set! sym_hash sym #f)))
+
         (let loop-node ([xml_list (list (xml->xexpr (document-element (read-xml (current-input-port)))))])
           (when (not (null? xml_list))
                 (let* ([node (car xml_list)]
@@ -25,6 +29,7 @@
 
                   (let loop-attr ([attrs attr_list])
                     (when (not (null? attrs))
+                          (let ([item (string->symbol (string-append (symbol->string prefix) "." (symbol->string (caar attrs)))) (cadar attr
                           (hash-set! xml_hash (string->symbol (string-append (symbol->string prefix) "." (symbol->string (caar attrs)))) (cadar attrs))
                           (loop-attr (cdr attrs))))
 
