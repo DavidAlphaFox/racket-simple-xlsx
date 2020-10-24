@@ -12,9 +12,15 @@
       xml
     (lambda ()
       (let ([xml_hash (make-hash)]
-            [sym_hash (make-hash)])
+            [sym_hash (make-hash)]
+            [sym_count_hash (make-hash)]
+            )
 
-        (map (lambda (sym) (hash-set! sym_hash sym #f)))
+        (map
+         (lambda (sym)
+           (hash-set! sym_hash sym #f)
+           (hash-set! sym_count_hash sym 0))
+         sym_list)
 
         (let loop-node ([xml_list (list (xml->xexpr (document-element (read-xml (current-input-port)))))])
           (when (not (null? xml_list))
@@ -23,14 +29,13 @@
                        [attr_list (cadr node)]
                        [content_list (cddr node)])
                   
-                  (printf "prefix:~a\n" prefix)
-                  (printf "attr_list:~a\n" attr_list)
-                  (printf "content_list:~a\n\n\n" content_list)
-
                   (let loop-attr ([attrs attr_list])
                     (when (not (null? attrs))
-                          (let ([item (string->symbol (string-append (symbol->string prefix) "." (symbol->string (caar attrs)))) (cadar attr
-                          (hash-set! xml_hash (string->symbol (string-append (symbol->string prefix) "." (symbol->string (caar attrs)))) (cadar attrs))
+                          (when (hash-has-key? sym_hash prefix)
+                                (hash-set! sym_count_hash prefix (add1 (hash-ref sym_count_hash prefix)))
+                                (hash-set! xml_hash prefix (add1 (hash-ref xml_hash prefix 0)))
+                                (set! prefix (string->symbol (format "~a~a" prefix (hash-ref sym_count_hash prefix)))))
+                          (hash-set! xml_hash (string->symbol (format "~a.~a" prefix (caar attrs))) (cadar attrs))
                           (loop-attr (cdr attrs))))
 
                   (loop-node content_list)
