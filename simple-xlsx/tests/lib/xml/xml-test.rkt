@@ -4,20 +4,19 @@
 (require racket/date)
 
 (require racket/runtime-path)
-(define-runtime-path xml_file "workbook.xml")
+(define-runtime-path workbook_xml_file "workbook.xml")
+(define-runtime-path sharedStrings_xml_file "sharedStrings.xml")
 
 (require rackunit "../../../lib/xml.rkt")
 
 (define test-xml
   (test-suite
-   "test-xml"
+   "test-workbook"
 
    (test-case
-    "test-get-xml-list"
+    "test-workbook"
 
-    (let* ([xml_hash (load-xml-hash xml_file '(sheet))])
-      (printf "~a\n" xml_hash)
-
+    (let* ([xml_hash (load-xml-hash workbook_xml_file '(sheet))])
       (check-equal? (hash-count xml_hash) 44)
       (check-equal? (hash-ref xml_hash "workbook.xmlns") "http://schemas.openxmlformats.org/spreadsheetml/2006/main")
       (check-equal? (hash-ref xml_hash "fileVersion.appName") "xl")
@@ -35,6 +34,21 @@
       (check-equal? (hash-ref xml_hash "sheet10.r:id") "rId10")
       )
 
+    )
+
+   (test-case
+    "test-shared-string"
+
+    (let* ([xml_hash (load-xml-hash sharedStrings_xml_file '(t phoneticPr))])
+      (printf "~a\n" xml_hash)
+
+      (check-equal? (hash-count xml_hash) 44)
+      (check-equal? (hash-ref xml_hash "sst.count") "17")
+      (check-equal? (hash-ref xml_hash "sst.uniqueCount") "17")
+
+      (check-equal? (hash-ref xml_hash "t.count") 17)
+      (check-equal? (hash-ref xml_hash "phoneticPr.count") 17)
+      )
     )
     
   ))

@@ -1,7 +1,6 @@
 #lang racket
 
 (provide (contract-out
-          [load-sheet-attr (-> path-string? (values (listof string?) hash? hash? hash?))]
           [get-shared-strings (-> path-string? hash?)]
           [get-rid-rel-map (-> path-string? hash?)]
           [with-input-from-xlsx-file (-> path-string? (-> (is-a?/c read-xlsx%) any) any)]
@@ -29,10 +28,10 @@
    xlsx_file
    (lambda (tmp_dir)
      (let (
-           [sheet_id_list #f]
-           [sheet_id_name_map #f]
-           [sheet_name_id_map #f]
-           [sheet_id_rid_map #f]
+           [sheet_id_list '()]
+           [sheet_id_name_map (make-hash)]
+           [sheet_name_id_map (make-hash)]
+           [sheet_id_rid_map (make-hash)]
            [shared_strings_map #f]
            [sheet_rid_rel_map #f]
            [sheets '()]
@@ -40,13 +39,20 @@
            [data_type_map (make-hash)]
            [xlsx_obj #f])
 
-       (let-values ([(_sheet_id_list _sheet_id_name_map _sheet_name_id_map _sheet_id_rid_map)
-                     (load-sheet-attr (build-path tmp_dir "xl" "workbook.xml"))])
-         (set! sheet_id_list _sheet_id_list)
-         (set! sheet_id_name_map _sheet_id_name_map)
-         (set! sheet_name_id_map _sheet_name_id_map)
-         (set! sheet_id_rid_map _sheet_id_rid_map)
-         )
+       (let ([workbook_hash
+              (load-xml-hash
+               (build-path tmp_dir "xl" "workbook.xml")
+               '(sheet))])
+         (let loop ([loop_count 1])
+           (when (<= loop_count (hash-ref xml_hash "sheet.count"))
+                 (let ([sheet_name (hash-ref xml_hash (format "sheet~a.name" loop_count))]
+                       [sheet_id (hash-ref xml_hash (format "sheet~a.sheetId" loop_count))]
+                       [rid (hash-ref xml_hash (format "sheet~a.r:id" loop_count))])
+                   (set! sheet_id_list `(,@sheet_id_list ,sheet_id))
+                   (hash-set! sheet_id_rid_map sheet_id rid)
+                   (hash-set! sheet_name_id_map sheet_name sheet_id)
+                   (hash-set! sheet_id_name_map sheet_id sheet_name))
+                 (loop (add1 loop_count)))))
 
        (set! shared_strings_map (get-shared-strings (build-path tmp_dir "xl" "sharedStrings.xml")))
 
@@ -60,30 +66,20 @@
                   (relation_name_map sheet_id_relation_map)))
        (user_proc xlsx_obj)))))
 
-(define (load-sheet-attr workbook_xml)
-  (let ([xml_hash (load-xml-hash workbook_xml '(sheet))]
-        [sheet_id_list '()]
-        [sheet_id_name_map (make-hash)]
-        [sheet_name_id_map (make-hash)]
-        [sheet_id_rid_map (make-hash)]
-        )
+(define (get-shared-strings shared_string_file)
+  (let ([shared_string_hash
+         (load-xml-hash
+          shared_string_file
+          '(si))])
+
+    (printf "~a\n" shared_string_bash)
+
     (let loop ([loop_count 1])
-      (when (<= loop_count (hash-ref xml_hash "sheet.count"))
+      (when (<= loop_count (hash-ref xml_hash "si.count"))
             (let ([sheet_name (hash-ref xml_hash (format "sheet~a.name" loop_count))]
                   [sheet_id (hash-ref xml_hash (format "sheet~a.sheetId" loop_count))]
-                  [rid (hash-ref xml_hash (format "sheet~a.r:id" loop_count))])
-              (set! sheet_id_list `(,@sheet_id_list ,sheet_id))
-              (hash-set! sheet_id_rid_map sheet_id rid)
-              (hash-set! sheet_name_id_map sheet_name sheet_id)
-              (hash-set! sheet_id_name_map sheet_id sheet_name))
-            (loop (add1 loop_count))))
-      (values
-       sheet_id_list
-       sheet_id_name_map
-       sheet_name_id_map
-       sheet_id_rid_map)))
+                       [rid (hash-ref xml_hash (format "sheet~a.r:id" loop_count))])
 
-(define (get-shared-strings shared_string_file)
   (let ([data_map (make-hash)])
     (when (file-exists? shared_string_file)
           (with-input-from-file
