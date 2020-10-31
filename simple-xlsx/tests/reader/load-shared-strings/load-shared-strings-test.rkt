@@ -7,17 +7,17 @@
 (require racket/runtime-path)
 (define-runtime-path sharedStrings_file "sharedStrings.xml")
 
-(define test-get-shared-strings
+(define test-load-shared-strings
   (test-suite
-   "test-get-shared-strings"
+   "test-load-shared-strings"
    
    (test-case
-    "test-get-shared-strings"
+    "test-load-shared-strings"
 
-    (let ([shared_strings_map (get-shared-strings sharedStrings_file)])
+    (let ([shared_strings_map (load-shared-strings sharedStrings_file)])
       (check-equal? (hash-count shared_strings_map) 17)
       (check-equal? (hash-ref shared_strings_map 1) "201601")
       (check-equal? (hash-ref shared_strings_map 16) "month/brand")
       ))))
 
-(run-tests test-get-shared-strings)
+(run-tests test-load-shared-strings)
