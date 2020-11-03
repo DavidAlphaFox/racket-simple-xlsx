@@ -3,7 +3,7 @@
 (provide (contract-out
           [load-workbook (-> path-string? (values list? hash? hash? hash?))]
           [load-shared-strings (-> path-string? hash?)]
-          [load-rid-rel-map (-> path-string? hash?)]
+          [load-workbook-rels (-> path-string? hash?)]
           [with-input-from-xlsx-file (-> path-string? (-> (is-a?/c read-xlsx%) any) any)]
           [get-sheet-names (-> (is-a?/c read-xlsx%) list?)]
           [get-cell-value (-> string? (is-a?/c read-xlsx%) any)]
@@ -49,7 +49,7 @@
 
        (set! shared_strings_map (load-shared-strings (build-path tmp_dir "xl" "sharedStrings.xml")))
 
-       (set! sheet_rid_rel_map (load-rid-rel-map (build-path tmp_dir "xl" "_rels" "workbook.xml.rels")))
+       (set! sheet_rid_rel_map (load-workbook-rels (build-path tmp_dir "xl" "_rels" "workbook.xml.rels")))
        
        (set! xlsx_obj
              (new read-xlsx%
@@ -101,18 +101,22 @@
               (loop (add1 loop_count)))))
     shared_hash))
 
-(define (load-rid-rel-map workbook_relation_file)
+(define (load-workbook-rels workbook_relation_file)
   (let ([xml_hash (load-xml-hash workbook_relation_file '(Relationship))]
         [data_hash (make-hash)])
-
-    (let loop ([loop_count 1])
-      (let* (
-             [relation_ship_id (hash-ref xml_hash (format "Relationship~a.Id" loop_count))]
-             [relation_ship_target (hash-ref xml_hash (format "Relationship~a.Target" loop_count))]
-             [id (hash-ref xml_hash relation_ship_id)]
-             [target (hash-ref xml_hash relation_ship_target)]
-             )
-        (hash-set! data_hash id target)))
+    (printf "~a\n" xml_hash)
+    (let ([relation_ship_count (hash-ref xml_hash "Relationship.count")])
+      (let loop ([loop_count 1])
+        (when (<= loop_count relation_ship_count)
+              (let* (
+                     [relation_ship_id (hash-ref xml_hash (format "Relationship~a.Id" loop_count))]
+                     [relation_ship_target (hash-ref xml_hash (format "Relationship~a.Target" loop_count))]
+                     [id (hash-ref xml_hash relation_ship_id)]
+                     [target (hash-ref xml_hash relation_ship_target)]
+                     )
+                (hash-set! data_hash id target)
+                (loop (add1 loop_count))))))
+    (printf "[~a]\n" data_hash)
     data_hash))
 
 (define (get-sheet-names xlsx)
