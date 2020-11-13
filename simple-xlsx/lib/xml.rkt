@@ -20,8 +20,6 @@
         (let loop-node ([ancester_prefix ""]
                         [xml_list (list (xml->xexpr (document-element (read-xml (current-input-port)))))])
 
-;;          (printf "~a\n" xml_list)
-
           (when (not (null? xml_list))
                 (if (not (list? (car xml_list)))
                     (if (hash-has-key? sym_hash ancester_prefix)

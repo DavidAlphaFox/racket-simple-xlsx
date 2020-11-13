@@ -16,8 +16,9 @@
 
     (let ([shared_strings_map (load-shared-strings sharedStrings_file)])
       (check-equal? (hash-count shared_strings_map) 17)
-      (check-equal? (hash-ref shared_strings_map 1) "201601")
-      (check-equal? (hash-ref shared_strings_map 16) "month/brand")
+      (check-equal? (hash-ref shared_strings_map 1) "")
+      (check-equal? (hash-ref shared_strings_map 2) "201601")
+      (check-equal? (hash-ref shared_strings_map 17) "month/brand")
       ))))
 
 (run-tests test-load-shared-strings)

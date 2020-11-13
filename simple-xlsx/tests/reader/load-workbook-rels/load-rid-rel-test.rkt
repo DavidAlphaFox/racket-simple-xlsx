@@ -15,13 +15,11 @@
     "test-load-workbook-rels"
 
     (let ([data_map (load-workbook-rels workbook_rels_file)])
-      (printf "~a\n" data_map)
-
-      (check-equal? (hash-count data_map) 10)
+      (check-equal? (hash-count data_map) 13)
 
       (check-equal? (hash-ref data_map "rId1") "worksheets/sheet1.xml")
       (check-equal? (hash-ref data_map "rId4") "chartsheets/sheet1.xml")
-      (check-equal? (hash-ref data_map "rId5") "chartsheets/sheet5.xml")
+      (check-equal? (hash-ref data_map "rId5") "chartsheets/sheet2.xml")
       (check-equal? (hash-ref data_map "rId10") "chartsheets/sheet7.xml")
 
       ))))

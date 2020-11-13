@@ -87,8 +87,8 @@
         [shared_hash (make-hash)])
 
     (let loop ([loop_count 1])
-      (let ([t (hash-ref xml_hash (format "t~a" loop_count))])
-        (when (<= loop_count (hash-ref xml_hash "t.count"))
+      (when (<= loop_count (hash-ref xml_hash "t.count"))
+            (let ([t (hash-ref xml_hash (format "t~a" loop_count))])
               (hash-set! shared_hash
                          loop_count
                          (cond
@@ -97,26 +97,22 @@
                           [(integer? t)
                            (string (integer->char t))]
                           [else
-                           ""]))
-              (loop (add1 loop_count)))))
+                           ""])))
+            (loop (add1 loop_count))))
     shared_hash))
 
 (define (load-workbook-rels workbook_relation_file)
   (let ([xml_hash (load-xml-hash workbook_relation_file '(Relationship))]
         [data_hash (make-hash)])
-    (printf "~a\n" xml_hash)
     (let ([relation_ship_count (hash-ref xml_hash "Relationship.count")])
       (let loop ([loop_count 1])
         (when (<= loop_count relation_ship_count)
               (let* (
                      [relation_ship_id (hash-ref xml_hash (format "Relationship~a.Id" loop_count))]
                      [relation_ship_target (hash-ref xml_hash (format "Relationship~a.Target" loop_count))]
-                     [id (hash-ref xml_hash relation_ship_id)]
-                     [target (hash-ref xml_hash relation_ship_target)]
                      )
-                (hash-set! data_hash id target)
+                (hash-set! data_hash relation_ship_id relation_ship_target)
                 (loop (add1 loop_count))))))
-    (printf "[~a]\n" data_hash)
     data_hash))
 
 (define (get-sheet-names xlsx)
