@@ -2,7 +2,7 @@
 
 (require rackunit/text-ui)
 
-(require rackunit "../../../reader.rkt")
+(require rackunit "../../../reader/load-workbook.rkt")
 
 (require racket/runtime-path)
 (define-runtime-path workbook_file "workbook.xml")

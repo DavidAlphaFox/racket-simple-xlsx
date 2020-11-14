@@ -2,7 +2,7 @@
 
 (require rackunit/text-ui)
 
-(require rackunit "../../../reader.rkt")
+(require rackunit "../../../reader/load-shared-strings.rkt")
 
 (require racket/runtime-path)
 (define-runtime-path sharedStrings_file "sharedStrings.xml")
