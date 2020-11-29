@@ -6,6 +6,7 @@
 (require "sheet.rkt")
 
 (provide (contract-out
+          [new-xlsx% class?]
           [read-xlsx% class?]
           [xlsx% class?]
           [struct xlsx-style
@@ -38,9 +39,10 @@
                     [alignment_code_to_alignment_hash #:mutable]
                     ))
 
-(define read-xlsx%
+(define new-xlsx%
   (class object%
          (init-field
+          [xlsx_dir #f]
           [sheet_id_list #f]
           [sheet_id_name_map #f]
           [sheet_name_id_map #f]
