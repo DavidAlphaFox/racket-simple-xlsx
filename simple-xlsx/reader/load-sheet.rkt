@@ -20,13 +20,28 @@
   (let ([data_map (make-hash)]
         [formula_map (make-hash)]
         [type_map (make-hash)]
-        [dimension_col 0]
-        [dimension ""]
         [rows #f]
         [data_sheet_file_name
          (build-path (get-field xlsx_dir xlsx) "xl" (hash-ref (get-field relation_name_map xlsx) (hash-ref (get-field sheet_name_map xlsx) sheet_name)))])
 
-    (let ([xml_hash (load-xml-hash shared_string_file '(t phoneticPr))]
+    (let ([xml_hash (load-xml-hash sheet_xml_file '(col row))])
+
+      (set-field! dimension xlsx
+                  (cons
+                   (check-equal? (hash-ref xml_hash "row.count") 4)
+                   (check-equal? (hash-ref xml_hash "col.count") 4)))
+
+      (let loop ([loop_count 1])
+        (when (<= loop_count (hash-ref xml_hash "row.count"))
+              (let ([r (hash-ref xml_hash (format "row~a.v" loop_count))]
+                    [sheet_id (hash-ref xml_hash (format "sheet~a.sheetId" loop_count))]
+                    [rid (hash-ref xml_hash (format "sheet~a.r:id" loop_count))])
+                (set! sheet_id_list `(,@sheet_id_list ,sheet_id))
+                (hash-set! sheet_id_rid_map sheet_id rid)
+                (hash-set! sheet_name_id_map sheet_name sheet_id)
+                (hash-set! sheet_id_name_map sheet_id sheet_name))
+              (loop (add1 loop_count)))))
+
     
     (when (string=? (path->string (car (take-right (explode-path data_sheet_file_name) 2))) "worksheets")
           (let ([file_str (file->string data_sheet_file_name)])

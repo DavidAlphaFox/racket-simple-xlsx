@@ -59,12 +59,15 @@
     "test-load-sheet"
     
     (let (
-          [xml_hash (load-xml-hash sheet_xml_file '(col row))]
+          [xml_hash (load-xml-hash sheet_xml_file '(col row c))]
           )
+      
+      (printf "~a\n" xml_hash)
 
       (check-equal? (hash-count xml_hash) 60)
       (check-equal? (hash-ref xml_hash "col.count") 4)
       (check-equal? (hash-ref xml_hash "row.count") 4)
+
       ))
   ))
 
