@@ -25,6 +25,8 @@
         [rows #f]
         [data_sheet_file_name
          (build-path (get-field xlsx_dir xlsx) "xl" (hash-ref (get-field relation_name_map xlsx) (hash-ref (get-field sheet_name_map xlsx) sheet_name)))])
+
+    (let ([xml_hash (load-xml-hash shared_string_file '(t phoneticPr))]
     
     (when (string=? (path->string (car (take-right (explode-path data_sheet_file_name) 2))) "worksheets")
           (let ([file_str (file->string data_sheet_file_name)])

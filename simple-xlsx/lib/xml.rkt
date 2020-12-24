@@ -25,7 +25,7 @@
           (let loop-node ([ancester_prefix ""]
                           [xml_list (list (xml->xexpr (document-element (read-xml filtered_port))))])
             
-            (printf "~a\n" xml_list)
+;;            (printf "~a\n" xml_list)
 
             (when (not (null? xml_list))
                   (if (not (list? (car xml_list)))
